@@ -1,0 +1,28 @@
+{
+  "pages": [
+    {
+      "path": "pages/tabbar/home",
+      "style": {
+        "navigationBarTitleText": "主页"
+      }
+    },
+    {
+      "path": "pages/tabbar/point",
+      "style": {
+        "navigationBarTitleText": "积分模拟"
+      }
+    },
+    {
+      "path": "pages/tabbar/social",
+      "style": {
+        "navigationBarTitleText": "主页"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "uni-app",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  }
+}
