@@ -6,7 +6,7 @@ import Common from "./common/common.js";
 // 创建应用实例
 export function createApp() {
   const app = createSSRApp(App);
-  const baseUrl = "http://tax.bjkc010.com";
+  const baseUrl = "https://tax.bjkc010.com";
 
   // 挂载到全局（Vue2用Vue.prototype，Vue3用app.config.globalProperties）
   // #ifdef VUE3

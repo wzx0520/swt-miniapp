@@ -1,10 +1,10 @@
 // 环境配置（可根据实际需求扩展）
 const ENV = {
   development: {
-    baseUrl: "http://tax.bjkc010.com/index.php/api", // 本地开发环境
+    baseUrl: "https://tax.bjkc010.com/api", // 本地开发环境
   },
   production: {
-    baseUrl: "http://tax.bjkc010.com/index.php/api", // 生产环境
+    baseUrl: "https://tax.bjkc010.com/api", // 生产环境
   },
 };
 

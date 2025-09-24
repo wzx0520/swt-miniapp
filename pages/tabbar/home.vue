@@ -3,17 +3,7 @@
     <view class="page">
         <!-- 1. 自定义导航栏 -->
         <view class="custom-nav">
-            <view class="nav-left">
-                <!-- 头像图标（替换为实际图片路径） -->
-                <image class="nav-avatar" src="/static/avatar.png" mode="aspectFill"></image>
-            </view>
             <view class="nav-title">留沪帮</view>
-            <view class="nav-right">
-                <!-- 更多菜单图标 -->
-                <image class="nav-more" src="/static/more.png" mode="aspectFill"></image>
-                <!-- 分享图标 -->
-                <image class="nav-share" src="/static/share.png" mode="aspectFill"></image>
-            </view>
         </view>
 
         <!-- 2. 搜索区域 -->
@@ -52,7 +42,7 @@
             </view>
         </view>
         <my-tabbar></my-tabbar>
-        <row-btn></row-btn>
+        <!-- <row-btn></row-btn> -->
     </view>
 </template>
 
@@ -134,7 +124,7 @@ export default {
     /* 导航栏背景色 */
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     padding: 0 16px;
     color: #fff;
 }

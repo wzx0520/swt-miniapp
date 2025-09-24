@@ -280,7 +280,7 @@
         </view>
     </view>
     <my-tabbar></my-tabbar>
-    <row-btn></row-btn>
+    <!-- <row-btn></row-btn> -->
 </template>
 
 <script>

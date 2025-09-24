@@ -70,6 +70,8 @@
                         <text>未缴</text>
                     </view>
                 </view>
+                <uni-data-select v-if="hasExtraFund" multiple v-model="extraValue" :localdata="extraRange"
+                    @change="extraChange"></uni-data-select>
             </view>
 
             <!-- 操作按钮 -->
@@ -176,7 +178,7 @@
         </view> -->
     </view>
     <my-tabbar></my-tabbar>
-    <row-btn></row-btn>
+    <!-- <row-btn></row-btn> -->
 </template>
 
 <script>
@@ -191,6 +193,9 @@ export default {
                 { label: '2倍社保基数', value: 2 },
                 { label: '3倍社保基数', value: 3 }
             ],
+            extraValue: [0.01, 0.02, 0.03, 0.04, 0.05],
+            extValue: '',
+            extraRange: [{ "value": 0.01, "text": "1%" }, { "value": 0.02, "text": "2%" }, { "value": 0.03, "text": "3%" }, { "value": 0.04, "text": "4%" }, { "value": 0.05, "text": "5%" }],
             selectedBase: 1,
             yearOptions: ['2024年7月-2025年6月', '2023年7月-2024年6月', '2022年7月-2023年6月'],
             selectedYear: '2024年7月-2025年6月',
@@ -213,10 +218,17 @@ export default {
     computed: {
         socialBase() {
             const base = 11396; // 2024年上海1倍社保基数
+            if (this.selectedBase === 0.6) {
+                this.salary = 7384
+                return 7384
+            }
+            this.salary = Math.round(base * this.selectedBase);
             return Math.round(base * this.selectedBase);
         },
         totalExpense() {
-            return this.personalTotal + this.companyTotal;
+            console.log(this.individualTax);
+
+            return this.individualTax + this.personalTotal + this.companyTotal;
         }
     },
     methods: {
@@ -230,31 +242,36 @@ export default {
         handleMonthChange(e) {
             this.selectedMonth = e.detail.value + 1;
         },
+        extraChange(e) {
+            this.extValue = e
+            console.log(this.extValue * 100);
+
+        },
         handleCalculate() {
             // 计算个人缴纳部分
-            const pension = this.socialBase * 0.08;
-            const medical = this.socialBase * 0.02;
-            const unemployment = this.socialBase * 0.005;
-            const housing = this.hasHousingFund ? this.socialBase * 0.07 : 0;
-            const extraHousing = this.hasExtraFund ? this.socialBase * 0.05 : 0;
+            const pension = this.salary * 0.08;
+            const medical = this.salary * 0.02;
+            const unemployment = this.salary * 0.005;
+            const housing = this.hasHousingFund ? this.salary * 0.07 : 0;
+            const extraHousing = this.hasExtraFund ? this.salary * 0.05 : 0;
 
             this.personalDetails = [
                 { name: '养老保险金', amount: pension, rate: 8 },
                 { name: '医疗保险金', amount: medical, rate: 2 },
                 { name: '失业保险金', amount: unemployment, rate: 0.5 },
                 { name: '基本住房公积金', amount: housing, rate: 7 },
-                { name: '补充住房公积金', amount: extraHousing, rate: 5 }
+                { name: '补充住房公积金', amount: this.salary * this.extValue, rate: this.extValue * 100 }
             ];
-            this.personalTotal = pension + medical + unemployment + housing + extraHousing;
+            this.personalTotal = pension + medical + unemployment + housing + this.salary * this.extValue;
 
             // 计算企业缴纳部分
-            const pensionCompany = this.socialBase * 0.16;
-            const medicalCompany = this.socialBase * 0.095;
-            const unemploymentCompany = this.socialBase * 0.005;
-            const injury = this.socialBase * 0.002;
-            const maternity = this.socialBase * 0.01;
-            const housingCompany = this.hasHousingFund ? this.socialBase * 0.07 : 0;
-            const extraHousingCompany = this.hasExtraFund ? this.socialBase * 0.05 : 0;
+            const pensionCompany = this.salary * 0.16;
+            const medicalCompany = this.salary * 0.095;
+            const unemploymentCompany = this.salary * 0.005;
+            const injury = this.salary * 0.002;
+            const maternity = this.salary * 0.01;
+            const housingCompany = this.hasHousingFund ? this.salary * 0.07 : 0;
+            const extraHousingCompany = this.hasExtraFund ? this.salary * this.extValue : 0;
 
             this.companyDetails = [
                 { name: '养老保险金', amount: pensionCompany, rate: 16 },
@@ -263,7 +280,7 @@ export default {
                 { name: '工伤保险金', amount: injury, rate: 0.2 },
                 { name: '生育保险金', amount: maternity, rate: 1 },
                 { name: '基本住房公积金', amount: housingCompany, rate: 7 },
-                { name: '补充住房公积金', amount: extraHousingCompany, rate: 5 }
+                { name: '补充住房公积金', amount: extraHousingCompany, rate: this.extValue * 100 || 0 }
             ];
             this.companyTotal = pensionCompany + medicalCompany + unemploymentCompany +
                 injury + maternity + housingCompany + extraHousingCompany;
@@ -278,15 +295,8 @@ export default {
         calculateTax(income) {
             const threshold = 5000;
             if (income <= threshold) return 0;
-
             const taxable = income - threshold;
-            if (taxable <= 3000) return taxable * 0.03;
-            if (taxable <= 12000) return taxable * 0.1 - 210;
-            if (taxable <= 25000) return taxable * 0.2 - 1410;
-            if (taxable <= 35000) return taxable * 0.25 - 2660;
-            if (taxable <= 55000) return taxable * 0.3 - 4410;
-            if (taxable <= 80000) return taxable * 0.35 - 7160;
-            return taxable * 0.45 - 15160;
+            return taxable * 0.03;
         },
         handleSave() {
             uni.showToast({ title: '结果已保存', icon: 'success' });
@@ -306,14 +316,14 @@ export default {
 
 <style lang="scss">
 .container {
-    padding: 30rpx;
+    padding: 30rpx 20rpx;
     background-color: #f7f7f7;
     min-height: 100vh;
 }
 
 .section {
     border-radius: 16rpx;
-    padding: 30rpx 20rpx;
+    padding: 30rpx 10rpx;
     margin-bottom: 20rpx;
     box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 
