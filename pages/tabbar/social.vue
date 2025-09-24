@@ -175,6 +175,8 @@
             </view>
         </view> -->
     </view>
+    <my-tabbar></my-tabbar>
+    <row-btn></row-btn>
 </template>
 
 <script>
@@ -304,7 +306,7 @@ export default {
 
 <style lang="scss">
 .container {
-    padding: 20rpx;
+    padding: 30rpx;
     background-color: #f7f7f7;
     min-height: 100vh;
 }

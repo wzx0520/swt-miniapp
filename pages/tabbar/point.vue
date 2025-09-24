@@ -6,7 +6,7 @@
         <view class="tip-text">请在符合您情况的选项内打勾或在文本框中填写相应的数字与内容</view>
         <!-- 参与人数提示 -->
         <view class="participate-tip">
-            目前已有311733人参与测评
+            目前已有*人参与测评
         </view>
         <view class="section-subtitle white">-基础指标和分值-</view>
 
@@ -33,15 +33,6 @@
                                 <view class="radio-text">{{ item.label }}</view>
                             </label>
                         </radio-group>
-                        <!-- 条件渲染：只有选中非第一个选项时才显示学历形式选择器 -->
-                        <view v-if="selectedEducation !== 'high_school'">
-                            <picker mode="selector" :range="degreeTypeOptions" range-key="label"
-                                @change="handleDegreeTypeChange" class="picker-wrapper">
-                                <view class="picker-text">
-                                    学历形式 {{ selectedDegreeType || '请选择' }}
-                                </view>
-                            </picker>
-                        </view>
                     </view>
                 </view>
 
@@ -131,7 +122,7 @@
                             <label class="radio-label">
                                 <radio value="yes" :checked="investStatus === 'yes'" />
                                 <view class="radio-text">是，最近三年纳税总额{{ investAmount }}万元（您的占股百分比{{ investRatio
-                                    }}%），企业聘用{{ investEmployees }}名上海户籍人员。</view>
+                                }}%），企业聘用{{ investEmployees }}名上海户籍人员。</view>
                             </label>
                         </radio-group>
 
@@ -288,6 +279,8 @@
             <button class="submit-btn" @click="handleSubmit">提交</button>
         </view>
     </view>
+    <my-tabbar></my-tabbar>
+    <row-btn></row-btn>
 </template>
 
 <script>
@@ -298,24 +291,13 @@ export default {
             age: '',
             education: 'highSchool',
             educationOptions: [
-                { label: '高中（大专、职校、技校）及以下', value: 'high_school' },
-                { label: '大专（高职）学历', value: 'junior_college' },
+                { label: '高中(大专、职校、技校)及以下', value: 'highSchool' },
+                { label: '大专(高职)学历', value: 'college' },
                 { label: '大学本科学历', value: 'bachelor' },
-                { label: '大学本科学历和学士学位', value: 'bachelor_degree' },
+                { label: '大学本科学历和学士学位', value: 'bachelorWithDegree' },
                 { label: '硕士研究生学历学位', value: 'master' },
                 { label: '博士研究生学历学位', value: 'doctor' }
             ],
-            // 学历形式下拉选项
-            degreeTypeOptions: [
-                { label: '全日制', value: 'full_time' },
-                { label: '网络教育', value: 'online' },
-                { label: '成人自考', value: 'adult_self_study' },
-                { label: '成人夜大', value: 'night_school' },
-                { label: '函授', value: 'correspondence' },
-                { label: '电视开放大学', value: 'tv_university' }
-            ],
-            selectedDegreeType: '', // 下拉选中值
-            selectedEducation: '',
 
             // 专业技术职称和技能等级
             professional: 'no',
@@ -391,13 +373,7 @@ export default {
     methods: {
         // 教育背景选择
         handleEducationChange(e) {
-            this.selectedEducation = e.detail.value;
-        },
-
-        // 学历形式选择
-        handleDegreeTypeChange(e) {
-            const index = e.detail.value;
-            this.selectedDegreeType = this.degreeTypeOptions[index].label;
+            this.education = e.detail.value;
         },
 
         // 专业技术职称选择
@@ -506,7 +482,7 @@ export default {
 
 <style lang="scss">
 .container {
-    padding: 20rpx 30rpx;
+    padding: 30rpx 30rpx 80rpx 30rpx;
     min-height: 100vh;
     background-color: #f7f7f7;
 }
@@ -634,17 +610,6 @@ export default {
             color: #333;
         }
     }
-}
-
-.picker-wrapper {
-    margin: 24rpx 0;
-}
-
-.picker-text {
-    padding: 20rpx;
-    border: 1px solid #eee;
-    border-radius: 8rpx;
-    font-size: 28rpx;
 }
 
 .input-field {
