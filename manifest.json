@@ -1,5 +1,5 @@
 {
-    "name" : "uni-forms 表单-sample",
+    "name" : "留沪帮",
     "appid" : "__UNI__AB3E45F",
     "description" : "",
     "versionName" : "1.0.0",
@@ -50,9 +50,12 @@
     /* 快应用特有相关 */
     "mp-weixin" : {
         /* 小程序特有相关 */
-        "appid" : "",
+        "appid" : "wx30d1639b0fa9ce0b",
         "setting" : {
-            "urlCheck" : false
+            "urlCheck" : true,
+            "es6" : true,
+            "minified" : true,
+            "postcss" : true
         },
         "usingComponents" : true
     },

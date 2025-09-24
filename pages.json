@@ -17,6 +17,12 @@
       "style": {
         "navigationBarTitleText": "主页"
       }
+    },
+    {
+      "path": "pages/detail/detail",
+      "style": {
+        "navigationBarTitleText": "新闻详情"
+      }
     }
   ],
   "globalStyle": {

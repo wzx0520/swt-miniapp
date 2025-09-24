@@ -7,7 +7,7 @@
                 <!-- 头像图标（替换为实际图片路径） -->
                 <image class="nav-avatar" src="/static/avatar.png" mode="aspectFill"></image>
             </view>
-            <view class="nav-title">非沪籍事务通</view>
+            <view class="nav-title">留沪帮</view>
             <view class="nav-right">
                 <!-- 更多菜单图标 -->
                 <image class="nav-more" src="/static/more.png" mode="aspectFill"></image>
@@ -19,83 +19,46 @@
         <!-- 2. 搜索区域 -->
         <view class="search-section">
             <!-- 搜索框 -->
-            <view class="search-box">
+            <!-- <view class="search-box">
                 <uni-icons type="search" size="18" color="#999"></uni-icons>
                 <input class="search-input" placeholder="搜索热门文章" />
-            </view>
-        </view>
-
-        <!-- 3. 横幅广告 -->
-        <!-- <view class="banner-section">
-            <image class="banner-img" src="/static/banner.png" mode="widthFix"></image>
-        </view> -->
-
-        <!-- 4. 功能菜单（两行图标+文字） -->
-        <view class="menu-section">
-            <!-- 第一行菜单 -->
-            <view class="menu-row">
-                <view class="menu-item" v-for="(item, index) in menuList1" :key="index" @click="handleMenuClick(item)">
-                    <image class="menu-icon" :src="item.icon" mode="aspectFill"></image>
-                    <text class="menu-text">{{ item.text }}</text>
-                </view>
-            </view>
-            <!-- 第二行菜单 -->
-            <!-- <view class="menu-row">
-                <view class="menu-item" v-for="(item, index) in menuList2" :key="index" @click="handleMenuClick(item)">
-                    <image class="menu-icon" :src="item.icon" mode="aspectFill"></image>
-                    <text class="menu-text">{{ item.text }}</text>
-                </view>
             </view> -->
         </view>
+
 
         <!-- 5. 公告栏 -->
         <view class="notice-section">
             <!-- 公告头（标题+工具按钮） -->
-            <view class="notice-header">
+            <!-- <view class="notice-header">
                 <text class="notice-title">2025年9月上海居转户公示名单</text>
                 <view class="notice-tools">
                     <view class="tool-item wechat">微信咨询</view>
                     <view class="tool-item call">拨打电话</view>
                 </view>
-            </view>
+            </view> -->
             <!-- 公告内容+元数据 -->
-            <view class="notice-content">
-                <text class="content-text">2025年9月第一批居转户完整公示名单：共20成功落户上海！</text>
-                <view class="content-meta">
-                    <text class="meta-views">👀 1039</text>
-                    <text class="meta-comments">💬 43</text>
-                    <text class="meta-time">2025-09-16 14:50:43</text>
+            <view class="notice-content" v-for="item in newsData" :key="item.id" @click="toDetail(item.id)">
+                <view class="content-left">
+                    <text class="content-title">{{ item.title }}</text>
+                    <view class="content-con">{{ item.sub_title }}</view>
+                    <view class="content-meta">
+                        <text class="meta-time">{{ item.createtime }}</text>
+                    </view>
+                </view>
+                <view class="content-right">
+                    <image class="news-img" :src="$baseUrl + item.cover_img" mode="widthFix" lazy-load="false"
+                        binderror="" bindload="" />
                 </view>
             </view>
         </view>
-
-        <!-- 6. 底部TabBar -->
-        <view class="tabbar-section">
-            <view class="tab-item" :class="{ active: tabIndex === 0 }" @click="switchTab(0)">
-                <image class="tab-icon" src="/static/tab1.png" mode="aspectFill"></image>
-                <text class="tab-text">最新资讯</text>
-            </view>
-            <view class="tab-item" :class="{ active: tabIndex === 1 }" @click="switchTab(1)">
-                <image class="tab-icon" src="/static/tab2.png" mode="aspectFill"></image>
-                <text class="tab-text">政策普及</text>
-            </view>
-            <view class="tab-item" :class="{ active: tabIndex === 2 }" @click="switchTab(2)">
-                <image class="tab-icon" src="/static/tab3.png" mode="aspectFill"></image>
-                <text class="tab-text">查询工具</text>
-            </view>
-            <view class="tab-item" :class="{ active: tabIndex === 3 }" @click="switchTab(3)">
-                <image class="tab-icon" src="/static/tab4.png" mode="aspectFill"></image>
-                <text class="tab-text">条件提升</text>
-            </view>
-            <view class="tab-item" :class="{ active: tabIndex === 4 }" @click="switchTab(4)">
-                <image class="tab-icon" src="/static/tab5.png" mode="aspectFill"></image>
-                <text class="tab-text">办理地址</text>
-            </view>
-        </view>
+        <my-tabbar></my-tabbar>
+        <row-btn></row-btn>
     </view>
 </template>
 
 <script>
+import { getNewsData } from '@/api/api';
+
 export default {
     data() {
         return {
@@ -113,10 +76,18 @@ export default {
                 { icon: '/static/menu10.png', text: '更多' }
             ],
             // TabBar 当前激活索引
-            tabIndex: 0
+            newsData: []
         }
     },
+    onLoad() {
+        this.fetchNewsData()
+    },
     methods: {
+        async fetchNewsData() {
+            const res = await getNewsData({ pageNum: 1, pageSize: 10 })
+            this.newsData = res.data.data
+
+        },
         // 功能菜单点击事件（可根据需求跳转页面）
         handleMenuClick(item) {
             uni.navigateTo({
@@ -126,8 +97,22 @@ export default {
         },
         // TabBar 切换事件（可根据需求跳转页面）
         switchTab(index) {
-            this.tabIndex = index
-            uni.showToast({ title: `切换到${this.tabBarList[index].text}`, icon: 'none' })
+            switch (index) {
+                case 0:
+                    uni.redirectTo({ url: '/pages/tabbar/home' })
+                    break
+                case 1:
+                    uni.redirectTo({ url: '/pages/tabbar/point' })
+                    break
+                case 2:
+                    uni.redirectTo({ url: '/pages/tabbar/social' })
+            }
+        },
+        // 跳转详情
+        toDetail(id) {
+            uni.navigateTo({
+                url: `/pages/detail/detail?id=${id}`,
+            })
         }
     }
 }
@@ -319,15 +304,19 @@ export default {
 }
 
 .notice-content {
-    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    padding: 30rpx;
     background-color: #fff;
     border-radius: 0 0 8px 8px;
+    border-bottom: 1rpx solid #eee;
 }
 
-.content-text {
-    font-size: 14px;
+.content-title {
+    font-size: 26rpx;
+    font-weight: bold;
     line-height: 1.5;
-    margin-bottom: 8px;
+    margin-bottom: 10rpx;
     display: block;
 }
 
@@ -338,47 +327,12 @@ export default {
     color: #999;
 }
 
+.news-img {
+    width: 120rpx;
+}
+
 .meta-views,
 .meta-comments {
     margin-right: 16px;
-}
-
-/* ========== 6. 底部TabBar ========== */
-.tabbar-section {
-    position: fixed;
-    /* 固定在底部 */
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 50px;
-    background-color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    border-top: 1px solid #eee;
-    /* 顶部分割线 */
-}
-
-.tab-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.tab-icon {
-    width: 24px;
-    height: 24px;
-    margin-bottom: 2px;
-}
-
-.tab-text {
-    font-size: 12px;
-    color: #999;
-}
-
-.tab-item.active .tab-text {
-    color: #409eff;
-    /* 激活态文字色 */
 }
 </style>
