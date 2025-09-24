@@ -15,7 +15,7 @@
     {
       "path": "pages/tabbar/social",
       "style": {
-        "navigationBarTitleText": "主页"
+        "navigationBarTitleText": "社保计算"
       }
     },
     {
