@@ -1,41 +1,61 @@
 <template>
     <view class="tabbar-section">
-        <view class="tab-item" :class="{ active: tabIndex === 0 }" @click="switchTab(0)">
-            <image class="tab-icon" mode="aspectFill"></image>
-            <text class="tab-text">最新资讯</text>
-        </view>
-        <view class="tab-item" :class="{ active: tabIndex === 1 }" @click="switchTab(1)">
-            <image class="tab-icon" mode="aspectFill"></image>
-            <text class="tab-text">积分模拟</text>
-        </view>
-        <view class="tab-item" :class="{ active: tabIndex === 2 }" @click="switchTab(2)">
-            <image class="tab-icon" mode="aspectFill"></image>
-            <text class="tab-text">社保计算</text>
+        <view class="navigator">
+            <view ref='warpper' class="warpper">
+                <view ref="navItem" class="navigator-item" v-for="(item, index) in tabList" :key="item.pagePath"
+                    @click="switchTab(item, index)" :data-index='index'>
+                    <image class="icon" src="/static/news.jpg">
+                    </image>
+                    <!-- <image class="icon" :src="$jointImage(item.selectedIconType)" v-else></image> -->
+                    <text :class="['item-text', { 'text-active': selectedIndex === index }]">{{ item.text
+                        }}</text>
+                </view>
+            </view>
         </view>
     </view>
 </template>
 
 <script>
 export default {
-    name: 'TabBar',
-    tabIndex: 0,
-    methods: {
-        switchTab(index) {
-            this.tabIndex = index
-            switch (index) {
-                case 0:
-                    uni.redirectTo({ url: '/pages/tabbar/home' })
-                    break;
-                case 1:
-                    uni.redirectTo({ url: '/pages/tabbar/point' })
-                    break
-                case 2:
-                    uni.redirectTo({ url: '/pages/tabbar/social' })
-                    break
-                default:
-                    break;
-            }
+    data() {
+        return {
+            name: 'TabBar',
+            tabIndex: 0,
+            tabList: [],
         }
+    },
+    mounted() {
+        this.alliconSet()
+        console.log(this.tabList);
+
+    },
+    methods: {
+        alliconSet() {
+            this.tabList = [{
+                pagePath: '/pages/tabbar/home',
+                text: '最新资讯',
+                iconPath: '/static/news.jpg'
+            }, {
+                pagePath: '/pages/tabbar/point',
+                text: '积分模拟',
+                iconPath: '/static/point.jpg'
+            }, {
+                pagePath: '/pages/tabbar/social',
+                text: '社保速算',
+                iconPath: '/static/calc.jpg'
+            }]
+        },
+        switchTab(items, indexs) {
+            if (this.selectedIndex === indexs) return;
+            uni.redirectTo({
+                url: `${this.tabList[indexs].pagePath}`
+            });
+            this.tabList.forEach((v, i) => {
+                if (items.pagePath === v.pagePath) {
+                    uni.setStorageSync('selectedIndex', indexs);
+                }
+            })
+        },
     }
 }
 </script>
@@ -43,39 +63,44 @@ export default {
 <style lang="scss" scoped>
 .tabbar-section {
     position: fixed;
-    /* 固定在底部 */
     bottom: 0;
+    margin: 0 auto;
     left: 0;
-    width: 100%;
-    height: 50px;
-    background-color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    border-top: 1px solid #eee;
+    right: 0;
+    width: 90%;
+    height: 80rpx;
+    padding: 20rpx 40rpx;
+    z-index: 999;
     /* 顶部分割线 */
 }
 
-.tab-item {
+.warpper {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    width: auto;
+    transition-timing-function: ease-out;
+}
+
+.navigator-item {
+    display: flex;
     align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    width: 100rpx;
+    height: 100%;
 }
 
-.tab-icon {
-    width: 24px;
-    height: 24px;
-    margin-bottom: 2px;
+.item-text {
+    margin-top: 6rpx;
+    color: #777E86;
+    font-size: 24rpx;
 }
 
-.tab-text {
-    font-size: 12px;
-    color: #999;
+.text-active {
+    color: #00F7FF !important;
 }
 
-.tab-item.active .tab-text {
-    color: #409eff;
-    /* 激活态文字色 */
+.icon {
+    width: 48rpx;
+    height: 48rpx;
 }
 </style>

@@ -20,7 +20,7 @@
                     <!-- 年龄指标 -->
                     <view class="question-item">
                         <view class="q-title">1、您的年龄(最高30分)</view>
-                        <input type="number" v-model.number="age" class="input-field" placeholder="请输入年龄（周岁）">
+                        <input type="number" v-model.number="age" placeholder="请输入年龄" @input="handleAgeChange">
                     </view>
 
                     <!-- 教育背景 -->
@@ -33,6 +33,24 @@
                                 <view class="radio-text">{{ item.label }}</view>
                             </label>
                         </radio-group>
+                        <!-- 学历形式选择 -->
+                        <view class="db-question">
+                            <picker mode="selector" :range="educationFormOptions" @change="handleEduFormChange"
+                                class="picker">
+                                <view class="picker-text">
+                                    {{ eduType || '学历形式' }}
+                                </view>
+                            </picker>
+                        </view>
+                        <!-- 学历形式选择 -->
+                        <view class="db-question">
+                            <picker mode="selector" :range="educationCityOptions" @change="handleEduCityChange"
+                                class="picker">
+                                <view class="picker-text">
+                                    {{ eduCity || '报考城市' }}
+                                </view>
+                            </picker>
+                        </view>
                     </view>
                 </view>
 
@@ -76,12 +94,7 @@
                                 {{ socialBase || '请选择社保缴费基数' }}
                             </view>
                         </picker>
-                    </view>
-
-                    <!-- 上海上年度职工平均工资 -->
-                    <view class="sub-question">
                         <view class="sub-title">上海市上年度职工平均工资</view>
-                        <input type="number" v-model.number="avgSalary" class="input-field" placeholder="请输入平均工资">
                     </view>
                 </view>
 
@@ -99,7 +112,7 @@
                         </label>
                     </radio-group>
                     <input v-if="socialYear === 'yes'" type="number" v-model.number="socialYearNum"
-                        class="input-field small" placeholder="请输入缴纳年数">
+                        @input="handleSocialYearNumChange" class="input-field small" placeholder="请输入缴纳年数">
                 </view>
             </view>
         </scroll-view>
@@ -111,6 +124,22 @@
             <view class="section-subtitle">- 加分指标及分值 -</view>
             <view class="evaluation-card">
                 <view class="indicator-section">
+
+                    <!-- 紧缺急需专业 -->
+                    <view class="question-item">
+                        <view class="q-title">5、紧缺急需专业</view>
+                        <radio-group class="radio-group" @change="handleShortSupplyChange">
+                            <label class="radio-label">
+                                <radio value="no" :checked="shortSupply === 'no'" />
+                                <view class="radio-text">否</view>
+                            </label>
+                            <label class="radio-label">
+                                <radio value="yes" :checked="shortSupply === 'yes'" />
+                                <view class="radio-text">是</view>
+                            </label>
+                        </radio-group>
+                    </view>
+
                     <!-- 投资纳税或带动本地就业 -->
                     <view class="question-item">
                         <view class="q-title">6、投资纳税或带动本地就业（最高120分）</view>
@@ -128,11 +157,11 @@
 
                         <view v-if="investStatus === 'yes'" class="sub-inputs">
                             <input type="number" v-model.number="investAmount" class="input-field small"
-                                placeholder="请输入纳税总额（万元）">
+                                placeholder="请输入纳税总额（万元）" @input="handleInvestNumChange">
                             <input type="number" v-model.number="investRatio" class="input-field small"
-                                placeholder="请输入占股百分比">
+                                @input="handleInvestNumChange" placeholder="请输入占股百分比">
                             <input type="number" v-model.number="investEmployees" class="input-field small"
-                                placeholder="请输入聘用上海户籍人数">
+                                @input="handleInvestNumChange" placeholder="请输入聘用上海户籍人数">
                         </view>
                     </view>
 
@@ -165,7 +194,7 @@
                             </label>
                         </radio-group>
                         <input v-if="publicService === 'yes'" type="number" v-model.number="publicServiceYears"
-                            class="input-field small" placeholder="请输入工作年数">
+                            class="input-field small" placeholder="请输入工作年数" @input="handlePublicServiceYearsChange">
                     </view>
 
                     <!-- 远郊重点区域 -->
@@ -182,7 +211,7 @@
                             </label>
                         </radio-group>
                         <input v-if="remoteArea === 'yes'" type="number" v-model.number="remoteAreaYears"
-                            class="input-field small" placeholder="请输入居住年数">
+                            class="input-field small" placeholder="请输入居住年数" @input="handleRemoteAreaYearsChange">
                     </view>
 
                     <!-- 全日制应届高校毕业生 -->
@@ -201,8 +230,8 @@
                     </view>
 
                     <!-- 上海工作期间获表彰奖励 -->
-                    <view class="question-item last-item">
-                        <view class="q-title">11、您在上海工作期间是否获得表彰奖励（110分）</view>
+                    <view class="question-item ">
+                        <view class="q-title">11、您在上海工作期间是否获得表彰奖励（最高110分）</view>
                         <radio-group class="radio-group" @change="handleAwardChange">
                             <label class="radio-label">
                                 <radio value="no" :checked="award === 'no'" />
@@ -216,7 +245,27 @@
                                 <radio value="comprehensive" :checked="award === 'comprehensive'" />
                                 <view class="radio-text">获得过上海市委办局等市级机关综合性表彰奖励</view>
                             </label>
+                            <label class="radio-label">
+                                <radio value="province" :checked="award === 'province'" />
+                                <view class="radio-text">获得过省部级及以上表彰奖励</view>
+                            </label>
                         </radio-group>
+                    </view>
+
+                    <view class="question-item last-item">
+                        <view class="q-title">12、配偶为本市户籍人员</view>
+                        <radio-group class="radio-group" @change="handleSpouseCityChange">
+                            <label class="radio-label">
+                                <radio value="no" :checked="spouseCity === 'no'" />
+                                <view class="radio-text">否</view>
+                            </label>
+                            <label class="radio-label">
+                                <radio value="yes" :checked="spouseCity === 'yes'" />
+                                <view class="radio-text">是，结婚已满{{ remoteAreaYears }}年</view>
+                            </label>
+                        </radio-group>
+                        <input v-if="spouseCity === 'yes'" type="number" v-model.number="spouseCityYears"
+                            class="input-field small" placeholder="请输入居住年数" @input="handleSpouseCityYearsChange">
                     </view>
                 </view>
             </view>
@@ -279,16 +328,97 @@
             <button class="submit-btn" @click="handleSubmit">提交</button>
         </view>
     </view>
+    <view class="popup-mask" v-if="popModalShow" @click="handleMaskClick">
+        <view class="popup-con"> <!-- 积分进度区：环形进度 + 目标分/当前分 -->
+            <view class="progress-section">
+                <view class="progress-circle">
+                    <view class="progress-inner">
+                        <text class="progress-text">您的积分模拟结果为</text>
+                        <text class="score-text">{{ totalScore }}分</text>
+                    </view>
+                </view>
+            </view>
+
+            <!-- 未达标提示区：文字 + 圆点装饰 -->
+            <view class="hint-section" v-if="totalScore < 120">
+                <view class="dot"></view>
+                <text class="hint-text">很遗憾，您的积分未达标</text>
+                <view class="dot"></view>
+            </view>
+
+            <!-- 联系老师区：文字信息 + 二维码 + 按钮 -->
+            <view class="contact-section">
+                <view class="contact-info">
+                    <text class="teacher-title">政策老师：x老师</text>
+                    <text class="contact-way">联系方式：xxxxxxxxx</text>
+                    <button class="add-btn" open-type="share">长按识别 添加老师</button>
+                </view>
+                <image class="qr-code" :src="qrCodeUrl" mode="widthFix"></image>
+            </view>
+
+            <!-- 各项得分区：标题 + 表格列表 -->
+            <view class="score-list-section">
+                <view class="list-title">各项得分</view>
+                <view class="score-table">
+                    <view class="table-row" v-for="(item, index) in scoreItems" :key="index">
+                        <text class="table-label">{{ item.label }}</text>
+                        <text class="table-value">{{ $data[item.value] }}分</text>
+                    </view>
+                </view>
+            </view>
+            <!-- 加分指标 -->
+            <view class="score-list-section">
+                <view class="list-title">加分指标及分值</view>
+                <view class="score-table">
+                    <view class="table-row" v-for="(item, index) in secondItems" :key="index">
+                        <text class="table-label">{{ item.name }}</text>
+                        <text class="table-value">{{ $data[item.value] }}分</text>
+                    </view>
+                </view>
+            </view>
+            <!-- 减分指标 -->
+            <view class="score-list-section">
+                <view class="list-title">加分指标及分值</view>
+                <view class="score-table">
+                    <view class="table-row" v-for="(item, index) in thirdItems" :key="index">
+                        <text class="table-label">{{ item.name }}</text>
+                        <text class="table-value">{{ $data[item.value] }}分</text>
+                    </view>
+                </view>
+            </view>
+            <view class="bottom-btn">
+                <view class="res-btn" @click="handleRestart">重新计算</view>
+                <view class="save-btn">关闭</view>
+            </view>
+        </view>
+    </view>
     <my-tabbar></my-tabbar>
-    <!-- <row-btn></row-btn> -->
 </template>
 
 <script>
 export default {
     data() {
         return {
+            popModalShow: false,
             // 基础信息
             age: '',
+            // 积分缓存
+            ageScore: 0,
+            educationScore: 0,
+            skillScore: 0,
+            socialYearScore: 0,
+            shortSupplyScore: 0,
+            investScore: 0,
+            socialBaseYearScore: 0,
+            publicServiceScore: 0,
+            remoteAreaScore: 0,
+            freshGraduateScore: 0,
+            awardScore: 0,
+            spouseCityScore: 0,
+            falseMaterialScore: 0,
+            administrativeScore: 0,
+            criminalRecordScore: 0,
+            totalScore: 0,
             education: 'highSchool',
             educationOptions: [
                 { label: '高中(大专、职校、技校)及以下', value: 'highSchool' },
@@ -298,6 +428,10 @@ export default {
                 { label: '硕士研究生学历学位', value: 'master' },
                 { label: '博士研究生学历学位', value: 'doctor' }
             ],
+            educationFormOptions: ['全日制', '网络教育', '成人自考', '成人夜大', '函授', '电视开放大学', '其他'],
+            eduType: '',
+            educationCityOptions: ['上海市', '申请人户籍所在地省份', '非以上情况'],
+            eduCity: '',
 
             // 专业技术职称和技能等级
             professional: 'no',
@@ -305,27 +439,24 @@ export default {
                 { label: '无专业技术职称和技术等级', value: 'no' },
                 { label: '有技能等级', value: 'skill' },
                 { label: '有专业技术职称', value: 'title' },
-                { label: '有国家专业技术类资格', value: 'national' }
             ],
             skillLevel: '',
-            skillLevelOptions: ['初级工', '中级工', '高级工', '技师', '高级技师'],
+            skillLevelOptions: ['国家职业资格五级', '国家职业资格四级', '国家职业资格三级', '国家职业资格二级（技师）', '国家职业资格一级（高级技师）'],
             professionalTitle: '',
-            titleOptions: ['初级职称', '中级职称', '副高级职称', '正高级职称'],
+            titleOptions: ['初级职称', '中级职称', '高级职称'],
             socialBase: '',
             socialBaseOptions: [
-                '低于80%',
-                '80%-100%',
-                '100%-200%',
-                '200%-300%',
-                '300%以上'
+                '低于',
+                '高于等于'
             ],
             avgSalary: '',
 
             // 社保缴纳年限
             socialYear: 'no',
-            socialYearNum: '',
+            socialYearNum: 0,
 
             // 加分指标
+            shortSupply: 'no',
             investStatus: 'no',
             investAmount: '',
             investRatio: '',
@@ -355,7 +486,9 @@ export default {
             publicServiceYears: '',
             remoteArea: 'no',
             remoteAreaYears: '',
+            spouseCityYears: '',
             freshGraduate: 'no',
+            spouseCity: 'no',
             award: 'no',
 
             // 减分指标
@@ -367,13 +500,109 @@ export default {
             criminalRecordOptions: ['无', '有'],
 
             // 一票否决
-            blacklist: 'no'
+            blacklist: 'no',
+            scoreItems: [
+                { label: '1、年龄', value: 'ageScore' },
+                { label: '2、教育背景', value: 'educationScore' },
+                { label: '3、专业技术职称和技能等级', value: 'skillScore' },
+                { label: '4、社保缴费年限', value: 'socialYearScore' }
+            ],
+            secondItems: [
+                { name: '5、紧缺急需专业', value: 'shortSupplyScore' },
+                { name: '6、投资纳税或带动本地就业', value: 'investScore' },
+                { name: '7、最近连续3年职业社会保险费基数', value: 'socialBaseYearScore' },
+                { name: '8、特定的公共服务领域', value: 'publicServiceScore' },
+                { name: '9、远郊重点区域', value: 'remoteAreaScore' },
+                { name: '10、是否全日制应届高校大学毕业生', value: 'freshGraduateScore' },
+                { name: '11、您在上海工作是否获得表彰奖励', value: 'awardScore' },
+                { name: '12、配偶为本市户籍人员', value: 'spouseCityScore' },
+            ],
+            thirdItems: [
+                { name: '13、三年内申请积分提供虚假材料', value: 'falseMaterialScore' },
+                { name: '14、三年内行政拘留记录', value: 'administrativeScore' },
+                { name: '15、三年内一般刑事犯罪记录', value: 'criminalRecordScore' }
+            ],
         };
     },
     methods: {
         // 教育背景选择
+        handleAgeChange() {
+            if (this.age !== null && !isNaN(this.age)) {
+                const age = parseInt(this.age);
+                if (age < 56) {
+                    this.ageScore = + 2 * (56 - age);
+                } else if (age >= 56 && age <= 60) {
+                    this.ageScore = 5;
+                } else {
+                    // 其他年龄区间暂不加分（可根据需求扩展）
+                    this.ageScore = 0;
+                }
+                this.ageScore = Math.min(this.ageScore, 30);
+                console.log(this.ageScore);
+            }
+        },
+
         handleEducationChange(e) {
-            this.education = e.detail.value;
+            this.education = e.detail.value
+            let educationScore = 0;
+            switch (this.education) {
+                case 'college':
+                    educationScore = 50; // 高中及以下、大专积50分
+                    break;
+                case 'bachelor':
+                    educationScore = 60; // 本科学历积60分
+                    break;
+                case 'bachelorWithDegree':
+                    educationScore = 90; // 本科+学位积90分
+                    break;
+                case 'master':
+                    educationScore = 100; // 研究生积100分
+                    break;
+                case 'doctor':
+                    educationScore = 110; // 博士积110分
+                    break;
+                default:
+                    educationScore = 0;
+            }
+            this.educationScore = educationScore
+            if (this.eduType !== '全日制') {
+                this.educationScore = 0
+            }
+            console.log(this.educationScore);
+
+        },
+
+        handleEduFormChange(e) {
+            this.eduType = this.educationFormOptions[e.detail.value]
+            if (e.detail.value === 0) {
+                let educationScore = 0;
+                switch (this.education) {
+                    case 'college':
+                        educationScore = 50; // 高中及以下、大专积50分
+                        break;
+                    case 'bachelor':
+                        educationScore = 60; // 本科学历积60分
+                        break;
+                    case 'bachelorWithDegree':
+                        educationScore = 90; // 本科+学位积90分
+                        break;
+                    case 'master':
+                        educationScore = 100; // 研究生积100分
+                        break;
+                    case 'doctor':
+                        educationScore = 110; // 博士积110分
+                        break;
+                    default:
+                        educationScore = 0;
+                }
+                this.educationScore = educationScore
+            }
+            console.log(this.educationScore);
+
+        },
+
+        handleEduCityChange(e) {
+            this.eduCity = this.educationCityOptions[e.detail.value]
         },
 
         // 专业技术职称选择
@@ -384,16 +613,67 @@ export default {
         // 技能等级选择
         handleSkillLevelChange(e) {
             this.skillLevel = this.skillLevelOptions[e.detail.value];
+            this.educationScore = 0
+            let skillScore = 0;
+            switch (e.detail.value) {
+                case 0:
+                    skillScore = 15; // 持证人取得技能等级五级积15分
+                    break;
+                case 1:
+                    skillScore = 30; // 持证人取得技能等级五级积30分
+                    break;
+                case 2:
+                    skillScore = 60; // 持证人取得技能等级五级积60分
+                    break;
+                case 3:
+                    skillScore = 100; // 持证人取得技能等级五级积100分
+                    break;
+                case 4:
+                    skillScore = 140; // 持证人取得技能等级五级积140分
+                    break;
+                default:
+                    skillScore = 0;
+            }
+            this.skillScore = skillScore
+            console.log(skillScore);
+
         },
 
         // 职称选择
         handleTitleChange(e) {
             this.professionalTitle = this.titleOptions[e.detail.value];
+            this.educationScore = 0
+            let skillScore = 0;
+            switch (e.detail.value) {
+                case 0:
+                    skillScore = 0;
+                    break;
+                case 1:
+                    skillScore = 100;
+                    break;
+                case 2:
+                    skillScore = 140;
+                    break;
+                default:
+                    skillScore = 0;
+            }
+            this.skillScore = skillScore
+            console.log(skillScore);
         },
 
         // 社保缴费基数选择
         handleSocialBaseChange(e) {
             this.socialBase = this.socialBaseOptions[e.detail.value];
+            if (e.detail.value === 0) {
+                switch (this.skillScore) {
+                    case 100:
+                        this.skillScore = 0
+                    case 140:
+                        this.skillScore = 0
+                    default:
+                        this.skillScore
+                }
+            }
         },
 
         // 社保缴纳年限选择
@@ -401,14 +681,74 @@ export default {
             this.socialYear = e.detail.value;
         },
 
+        // 计算社保年限分数
+        handleSocialYearNumChange() {
+            if (1 <= this.socialYearNum <= 40) {
+                this.socialYearScore = parseInt(this.socialYearNum) * 3
+            } else {
+                this.socialYearScore = 0
+            }
+            console.log(this.socialYearScore)
+        },
+
+        // 紧缺急需专业分数
+        handleShortSupplyChange(e) {
+            this.shortSupply = e.detail.value;
+            this.shortSupplyScore = e.detail.value === 'yes' ? 30 : 0
+        },
+
         // 投资纳税选择
         handleInvestChange(e) {
             this.investStatus = e.detail.value;
+
+
+            console.log(this.investScore);
+
+        },
+
+        handleInvestNumChange() {
+            // 1. 计算「最近三年平均每年」的纳税额、聘用户籍人数
+            const avgTax = this.investAmount / 3;   // 平均每年纳税额（万元）
+            const avgEmployees = this.investEmployees;
+
+            // 2. 纳税积分：每10万元积10分（不足10万不计）
+            const taxPoints = avgTax >= 10
+                ? Math.floor(avgTax / 10) * 10
+                : 0;
+
+            // 3. 聘用户籍积分：每10人积10分（不足10人不计）
+            const employeePoints = avgEmployees >= 10
+                ? Math.floor(avgEmployees / 10) * 10
+                : 0;
+
+            // 4. 总分上限120分
+            this.investScore = Math.min(Math.max(taxPoints, employeePoints), 120);
+            console.log(this.investScore);
         },
 
         // 社保基数年份选择
         handleSocialBaseYearChange(e) {
             this.socialBaseYear = e.detail.value;
+            let socialBaseYearScore = 0
+            switch (e.detail.value) {
+                case 'below80':
+                    socialBaseYearScore = 0;
+                    break;
+                case '80-100':
+                    socialBaseYearScore = 25;
+                    break;
+                case '100-200':
+                    socialBaseYearScore = 50;
+                    break;
+                case '200-300':
+                    socialBaseYearScore = 100;
+                    break;
+                default:
+                    socialBaseYearScore = 0;
+            }
+            this.socialBaseYearScore = socialBaseYearScore
+            console.log(this.socialBaseYearScore);
+
         },
 
         // 特定公共服务领域选择
@@ -416,39 +756,117 @@ export default {
             this.publicService = e.detail.value;
         },
 
+        handlePublicServiceYearsChange() {
+            if (this.publicServiceYears > 5) {
+                this.publicServiceScore = Math.min((this.publicServiceYears - 5) * 4, 30)
+            } else {
+                this.publicServiceScore = 0
+            }
+            console.log(this.publicServiceScore);
+
+        },
+
         // 远郊重点区域选择
         handleRemoteAreaChange(e) {
             this.remoteArea = e.detail.value;
         },
 
+        handleRemoteAreaYearsChange() {
+            if (this.remoteAreaYears > 5) {
+                this.remoteAreaScore = Math.min((this.remoteAreaYears - 5) * 2, 30)
+            } else {
+                this.remoteAreaScore = 0
+            }
+        },
+
         // 全日制应届毕业生选择
         handleFreshGraduateChange(e) {
             this.freshGraduate = e.detail.value;
+            this.freshGraduateScore = e.detail.value === 'yes' ? 10 : 0
         },
 
         // 表彰奖励选择
         handleAwardChange(e) {
             this.award = e.detail.value;
+            let score = 0
+            switch (e.detail.value) {
+                case 'no':
+                    score = 0;
+                    break;
+                case 'special':
+                    score = 30;
+                    break;
+                case 'comprehensive':
+                    score = 60;
+                    break;
+                case 'province':
+                    score = 110;
+                    break;
+                default:
+                    score = 0;
+            }
+            this.awardScore = score
+            console.log(this.awardScore);
+
+        },
+
+        // 配偶为本市选择
+        handleSpouseCityChange(e) {
+            this.spouseCity = e.detail.value
+        },
+
+        handleSpouseCityYearsChange() {
+            if (this.spouseCityYears >= 1) {
+                this.spouseCityScore = Math.min(this.spouseCityYears * 4, 40)
+            } else {
+                this.spouseCityScore = 0
+            }
+            console.log(this.spouseCityScore);
+
         },
 
         // 虚假材料选择
         handleFalseMaterialChange(e) {
             this.falseMaterial = this.falseMaterialOptions[e.detail.value];
+            let score = 0
+            e.detail.value === 0 ? score = 0 : score = -150
+            this.falseMaterialScore = score;
         },
 
         // 行政拘留选择
         handleAdministrativeDetentionChange(e) {
             this.administrativeDetention = this.administrativeDetentionOptions[e.detail.value];
+            let score = 0
+            e.detail.value === 0 ? score = 0 : score = -150
+            this.administrativeScore = score
         },
 
         // 刑事犯罪记录选择
         handleCriminalRecordChange(e) {
             this.criminalRecord = this.criminalRecordOptions[e.detail.value];
+            let score = 0
+            e.detail.value === 0 ? score = 0 : score = -150
+            this.criminalRecordScore = score
         },
 
         // 一票否决选择
         handleBlacklistChange(e) {
             this.blacklist = e.detail.value;
+        },
+
+        calculateScore() {
+            // 将所有评分属性名存入数组
+            const scoreFields = [
+                'ageScore', 'educationScore', 'skillScore', 'socialYearScore',
+                'shortSupplyScore', 'investScore', 'socialBaseYearScore', 'publicServiceScore',
+                'remoteAreaScore', 'freshGraduateScore', 'awardScore', 'spouseCityScore',
+                'falseMaterialScore', 'administrativeScore', 'criminalRecordScore'
+            ];
+
+            // 计算总分
+            this.totalScore = scoreFields.reduce((sum, field) => sum + (this[field] || 0), 0);
+            console.log(this.totalScore);
+
         },
 
         // 提交表单
@@ -469,12 +887,22 @@ export default {
                 return;
             }
 
+            this.calculateScore();
+
+
             // 模拟提交成功
             setTimeout(() => {
                 uni.hideLoading();
-                uni.showToast({ title: '提交成功', icon: 'success' });
-                // 实际开发中可跳转到结果页或重置表单
+                this.popModalShow = true
             }, 1500);
+        },
+
+        handleRestart() {
+            this.popModalShow = false
+        },
+
+        handleMaskClick() {
+            this.popModalShow = false
         }
     }
 };
@@ -645,6 +1073,10 @@ export default {
     }
 }
 
+.db-question {
+    margin-top: 20rpx;
+}
+
 .sub-question {
     margin-top: 20rpx;
     margin-bottom: 40rpx;
@@ -676,5 +1108,223 @@ export default {
     &:active {
         background: #0066cc;
     }
+}
+
+/* 页面容器 */
+.popup-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.3s ease;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.popup-con {
+    overflow: scroll;
+    background: #fff;
+    border-radius: 16rpx;
+    padding: 40rpx;
+    height: 80vh;
+    box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+    position: relative;
+}
+
+/* 积分进度区 */
+.progress-section {
+    position: relative;
+    width: 100%;
+    height: 300rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-circle {
+    width: 500rpx;
+    height: 250rpx;
+    /* 上半圆高度 */
+    border-radius: 250rpx 250rpx 0 0;
+    /* 上半圆造型 */
+    background: conic-gradient(#d7ebfe 0%, #d7ebfe 100%);
+    /* 进度环（灰色占满，代表0分） */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    /* 隐藏下半部分 */
+}
+
+.progress-inner {
+    text-align: center;
+}
+
+.progress-text {
+    font-size: 28rpx;
+    color: #333;
+}
+
+.score-text {
+    font-size: 48rpx;
+    color: #333;
+    font-weight: bold;
+}
+
+.target-score {
+    position: absolute;
+    top: 20rpx;
+    right: 20rpx;
+    font-size: 28rpx;
+    color: #333;
+}
+
+.current-score {
+    position: absolute;
+    bottom: 20rpx;
+    left: 20rpx;
+    font-size: 28rpx;
+    color: #333;
+}
+
+/* 未达标提示区 */
+.hint-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 40rpx 0;
+}
+
+.dot {
+    width: 16rpx;
+    height: 16rpx;
+    border-radius: 50%;
+    background-color: #2b85e4;
+    /* 蓝色圆点 */
+    margin: 0 20rpx;
+}
+
+.hint-text {
+    font-size: 28rpx;
+    color: #333;
+}
+
+/* 联系老师区 */
+.contact-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20rpx;
+    border: 1px solid #3176d1;
+    border-radius: 10rpx;
+    margin-bottom: 40rpx;
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.teacher-title {
+    font-size: 28rpx;
+    color: #333;
+    margin-bottom: 10rpx;
+}
+
+.contact-way {
+    font-size: 26rpx;
+    color: #666;
+    margin-bottom: 20rpx;
+}
+
+.add-btn {
+    width: 200rpx;
+    height: 60rpx;
+    line-height: 60rpx;
+    text-align: center;
+    background-color: #f5f5f5;
+    color: #333;
+    font-size: 26rpx;
+    border-radius: 30rpx;
+    padding: 0;
+    /* 清除默认按钮内边距 */
+}
+
+.qr-code {
+    width: 180rpx;
+    height: 180rpx;
+}
+
+/* 各项得分区 */
+.score-list-section {
+    margin-top: 40rpx;
+}
+
+.list-title {
+    font-size: 32rpx;
+    color: #fff;
+    background-color: #2b85e4;
+    /* 蓝色标题栏 */
+    padding: 16rpx;
+    text-align: center;
+    border-radius: 10rpx 10rpx 0 0;
+}
+
+.score-table {
+    background-color: #f5f5f5;
+    border-radius: 0 0 10rpx 10rpx;
+    overflow: hidden;
+    /* 隐藏内部边框溢出 */
+}
+
+.table-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20rpx;
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+}
+
+.table-row:last-child {
+    border-bottom: none;
+    /* 最后一行无下边框 */
+}
+
+.table-label {
+    font-size: 28rpx;
+    color: #333;
+}
+
+.table-value {
+    font-size: 28rpx;
+    color: #333;
+}
+
+.bottom-btn {
+    margin-top: 30rpx;
+    display: flex;
+    justify-content: space-around;
+    color: #fff;
+}
+
+.res-btn {
+    padding: 20rpx 50rpx;
+    background: #2b85e4;
+    border-radius: 40rpx;
+
+}
+
+.save-btn {
+    padding: 20rpx 50rpx;
+    background: #2b85e4;
+    border-radius: 40rpx;
 }
 </style>
