@@ -36,7 +36,7 @@
                         <!-- 学历形式选择 -->
                         <view class="db-question">
                             <picker mode="selector" :range="educationFormOptions" @change="handleEduFormChange"
-                                class="picker">
+                                class="picker" :disabled="education === 'highSchool'">
                                 <view class="picker-text">
                                     {{ eduType || '学历形式' }}
                                 </view>
@@ -45,7 +45,7 @@
                         <!-- 学历形式选择 -->
                         <view class="db-question">
                             <picker mode="selector" :range="educationCityOptions" @change="handleEduCityChange"
-                                class="picker">
+                                :disabled="education === 'highSchool' || eduType === '全日制'" class="picker">
                                 <view class="picker-text">
                                     {{ eduCity || '报考城市' }}
                                 </view>
@@ -261,7 +261,7 @@
                             </label>
                             <label class="radio-label">
                                 <radio value="yes" :checked="spouseCity === 'yes'" />
-                                <view class="radio-text">是，结婚已满{{ remoteAreaYears }}年</view>
+                                <view class="radio-text">是，结婚已满{{ spouseCityYears }}年</view>
                             </label>
                         </radio-group>
                         <input v-if="spouseCity === 'yes'" type="number" v-model.number="spouseCityYears"
@@ -378,7 +378,7 @@
             </view>
             <!-- 减分指标 -->
             <view class="score-list-section">
-                <view class="list-title">加分指标及分值</view>
+                <view class="list-title">减分指标及分值</view>
                 <view class="score-table">
                     <view class="table-row" v-for="(item, index) in thirdItems" :key="index">
                         <text class="table-label">{{ item.name }}</text>
@@ -544,6 +544,11 @@ export default {
 
         handleEducationChange(e) {
             this.education = e.detail.value
+            // 如果选择高中及以下，清空已选的学历形式和城市
+            if (this.education === 'highSchool') {
+                this.eduType = ''
+                this.eduCity = ''
+            }
             let educationScore = 0;
             switch (this.education) {
                 case 'college':
@@ -603,6 +608,12 @@ export default {
 
         handleEduCityChange(e) {
             this.eduCity = this.educationCityOptions[e.detail.value]
+            if (e.detail.value === 2) {
+                this.educationScore = 0
+            } else {
+                this.educationScore = score
+            }
+            console.log(this.educationScore);
         },
 
         // 专业技术职称选择
@@ -683,8 +694,8 @@ export default {
 
         // 计算社保年限分数
         handleSocialYearNumChange() {
-            if (1 <= this.socialYearNum <= 40) {
-                this.socialYearScore = parseInt(this.socialYearNum) * 3
+            if (this.socialYearNum >= 1) {
+                this.socialYearScore = Math.min(parseInt(this.socialYearNum) * 3, 120)
             } else {
                 this.socialYearScore = 0
             }
@@ -695,6 +706,8 @@ export default {
         handleShortSupplyChange(e) {
             this.shortSupply = e.detail.value;
             this.shortSupplyScore = e.detail.value === 'yes' ? 30 : 0
+            console.log(this.shortSupplyScore);
+
         },
 
         // 投资纳税选择
@@ -754,6 +767,9 @@ export default {
         // 特定公共服务领域选择
         handlePublicServiceChange(e) {
             this.publicService = e.detail.value;
+            if (e.detail.value === 'no') { this.publicServiceScore = 0; this.publicServiceYears = '' }
+            console.log(this.publicServiceScore);
+
         },
 
         handlePublicServiceYearsChange() {
@@ -769,6 +785,9 @@ export default {
         // 远郊重点区域选择
         handleRemoteAreaChange(e) {
             this.remoteArea = e.detail.value;
+            if (e.detail.value === 'no') { this.remoteAreaScore = 0; this.remoteAreaYears = '' }
+            console.log(this.remoteAreaScore);
+
         },
 
         handleRemoteAreaYearsChange() {
@@ -777,12 +796,14 @@ export default {
             } else {
                 this.remoteAreaScore = 0
             }
+            console.log(this.remoteAreaScore);
         },
 
         // 全日制应届毕业生选择
         handleFreshGraduateChange(e) {
             this.freshGraduate = e.detail.value;
             this.freshGraduateScore = e.detail.value === 'yes' ? 10 : 0
+            console.log(this.freshGraduateScore);
         },
 
         // 表彰奖励选择
@@ -813,6 +834,11 @@ export default {
         // 配偶为本市选择
         handleSpouseCityChange(e) {
             this.spouseCity = e.detail.value
+            if (e.detail.value === 'no') {
+                this.spouseCityScore = 0
+                this.spouseCityYears = ''
+            }
+            console.log(this.spouseCityScore);
         },
 
         handleSpouseCityYearsChange() {
