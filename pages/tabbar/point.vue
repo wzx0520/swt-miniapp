@@ -36,7 +36,8 @@
                         <!-- 学历形式选择 -->
                         <view class="db-question">
                             <picker mode="selector" :range="educationFormOptions" @change="handleEduFormChange"
-                                class="picker" :disabled="education === 'highSchool'">
+                                class="picker"
+                                :disabled="education === 'highSchool' || education === 'master' || education === 'doctor'">
                                 <view class="picker-text">
                                     {{ eduType || '学历形式' }}
                                 </view>
@@ -45,7 +46,8 @@
                         <!-- 学历形式选择 -->
                         <view class="db-question">
                             <picker mode="selector" :range="educationCityOptions" @change="handleEduCityChange"
-                                :disabled="education === 'highSchool' || eduType === '全日制'" class="picker">
+                                :disabled="education === 'highSchool' || eduType === '全日制' || education === 'master' || education === 'doctor'"
+                                class="picker">
                                 <view class="picker-text">
                                     {{ eduCity || '报考城市' }}
                                 </view>
@@ -151,7 +153,7 @@
                             <label class="radio-label">
                                 <radio value="yes" :checked="investStatus === 'yes'" />
                                 <view class="radio-text">是，最近三年纳税总额{{ investAmount }}万元（您的占股百分比{{ investRatio
-                                }}%），企业聘用{{ investEmployees }}名上海户籍人员。</view>
+                                    }}%），企业聘用{{ investEmployees }}名上海户籍人员。</view>
                             </label>
                         </radio-group>
 
@@ -404,7 +406,7 @@ export default {
             age: '',
             // 积分缓存
             ageScore: 0,
-            educationScore: 0,
+            educationScore: '',
             skillScore: 0,
             socialYearScore: 0,
             shortSupplyScore: 0,
@@ -419,7 +421,7 @@ export default {
             administrativeScore: 0,
             criminalRecordScore: 0,
             totalScore: 0,
-            education: 'highSchool',
+            education: '',
             educationOptions: [
                 { label: '高中(大专、职校、技校)及以下', value: 'highSchool' },
                 { label: '大专(高职)学历', value: 'college' },
@@ -434,7 +436,7 @@ export default {
             eduCity: '',
 
             // 专业技术职称和技能等级
-            professional: 'no',
+            professional: '',
             professionalOptions: [
                 { label: '无专业技术职称和技术等级', value: 'no' },
                 { label: '有技能等级', value: 'skill' },
@@ -452,16 +454,16 @@ export default {
             avgSalary: '',
 
             // 社保缴纳年限
-            socialYear: 'no',
+            socialYear: '',
             socialYearNum: 0,
 
             // 加分指标
-            shortSupply: 'no',
-            investStatus: 'no',
+            shortSupply: '',
+            investStatus: '',
             investAmount: '',
             investRatio: '',
             investEmployees: '',
-            socialBaseYear: 'below80',
+            socialBaseYear: '',
             socialBaseYearOptions: [
                 {
                     label: '最近4年内累计36个月缴纳职工社会保险费低于上海市上年度职工平均工资80%',
@@ -482,14 +484,14 @@ export default {
             ],
 
             // 第8-11题
-            publicService: 'no',
+            publicService: '',
             publicServiceYears: '',
-            remoteArea: 'no',
+            remoteArea: '',
             remoteAreaYears: '',
             spouseCityYears: '',
-            freshGraduate: 'no',
-            spouseCity: 'no',
-            award: 'no',
+            freshGraduate: '',
+            spouseCity: '',
+            award: '',
 
             // 减分指标
             falseMaterial: '无',
@@ -525,19 +527,22 @@ export default {
         };
     },
     methods: {
-        // 教育背景选择
+        // 年龄选择积分
         handleAgeChange() {
             if (this.age !== null && !isNaN(this.age)) {
                 const age = parseInt(this.age);
-                if (age < 56) {
-                    this.ageScore = + 2 * (56 - age);
+                if (age >= 18 && age <= 43) {
+                    this.ageScore = 30;
+                } else if (age === 44) {
+                    this.ageScore = 29;
+                } else if (age > 44 && age < 56) {
+                    this.ageScore = 29 - 2 * (age - 44);
                 } else if (age >= 56 && age <= 60) {
                     this.ageScore = 5;
                 } else {
                     // 其他年龄区间暂不加分（可根据需求扩展）
                     this.ageScore = 0;
                 }
-                this.ageScore = Math.min(this.ageScore, 30);
                 console.log(this.ageScore);
             }
         },
@@ -552,7 +557,7 @@ export default {
             let educationScore = 0;
             switch (this.education) {
                 case 'college':
-                    educationScore = 50; // 高中及以下、大专积50分
+                    educationScore = 50; // 大专积50分
                     break;
                 case 'bachelor':
                     educationScore = 60; // 本科学历积60分
@@ -570,6 +575,13 @@ export default {
                     educationScore = 0;
             }
             this.educationScore = educationScore
+            if (this.education === 'master' || this.education === 'doctor') {
+                this.eduType = ''
+                this.eduCity = ''
+                console.log(this.educationScore);
+                return
+            }
+
             if (this.eduType !== '全日制') {
                 this.educationScore = 0
             }
@@ -579,11 +591,13 @@ export default {
 
         handleEduFormChange(e) {
             this.eduType = this.educationFormOptions[e.detail.value]
-            if (e.detail.value === 0) {
+
+            if (e.detail.value === '0') {
+                this.eduCity = ''
                 let educationScore = 0;
                 switch (this.education) {
                     case 'college':
-                        educationScore = 50; // 高中及以下、大专积50分
+                        educationScore = 50; // 大专积50分
                         break;
                     case 'bachelor':
                         educationScore = 60; // 本科学历积60分
@@ -608,10 +622,30 @@ export default {
 
         handleEduCityChange(e) {
             this.eduCity = this.educationCityOptions[e.detail.value]
-            if (e.detail.value === 2) {
+            if (e.detail.value === '2') {
                 this.educationScore = 0
             } else {
-                this.educationScore = score
+                let educationScore = 0;
+                switch (this.education) {
+                    case 'college':
+                        educationScore = 50; // 大专积50分
+                        break;
+                    case 'bachelor':
+                        educationScore = 60; // 本科学历积60分
+                        break;
+                    case 'bachelorWithDegree':
+                        educationScore = 90; // 本科+学位积90分
+                        break;
+                    case 'master':
+                        educationScore = 100; // 研究生积100分
+                        break;
+                    case 'doctor':
+                        educationScore = 110; // 博士积110分
+                        break;
+                    default:
+                        educationScore = 0;
+                }
+                this.educationScore = educationScore
             }
             console.log(this.educationScore);
         },
@@ -624,7 +658,6 @@ export default {
         // 技能等级选择
         handleSkillLevelChange(e) {
             this.skillLevel = this.skillLevelOptions[e.detail.value];
-            this.educationScore = 0
             let skillScore = 0;
             switch (e.detail.value) {
                 case 0:
@@ -675,16 +708,18 @@ export default {
         // 社保缴费基数选择
         handleSocialBaseChange(e) {
             this.socialBase = this.socialBaseOptions[e.detail.value];
+            let skillScore = 0;
             if (e.detail.value === 0) {
                 switch (this.skillScore) {
                     case 100:
-                        this.skillScore = 0
+                        skillScore = 0
                     case 140:
-                        this.skillScore = 0
+                        skillScore = 0
                     default:
-                        this.skillScore
+                        skillScore = this.skillScore
                 }
             }
+            this.skillScore = skillScore
         },
 
         // 社保缴纳年限选择
@@ -697,7 +732,8 @@ export default {
             if (this.socialYearNum >= 1) {
                 this.socialYearScore = Math.min(parseInt(this.socialYearNum) * 3, 120)
             } else {
-                this.socialYearScore = 0
+                let socialYearScore = 0
+                this.socialYearScore = socialYearScore
             }
             console.log(this.socialYearScore)
         },
@@ -888,6 +924,9 @@ export default {
                 'remoteAreaScore', 'freshGraduateScore', 'awardScore', 'spouseCityScore',
                 'falseMaterialScore', 'administrativeScore', 'criminalRecordScore'
             ];
+            if (this.socialYear === 'no') {
+                this.restartForm()
+            }
 
             // 计算总分
             this.totalScore = scoreFields.reduce((sum, field) => sum + (this[field] || 0), 0);
@@ -898,6 +937,14 @@ export default {
         // 提交表单
         handleSubmit() {
             uni.showLoading({ title: '提交中...' });
+            if (this.educationScore > this.skillScore) {
+                this.skillScore = 0
+            } else {
+                this.educationScore = 0
+            }
+
+
+
 
             // 表单验证逻辑
             const requiredFields = [
@@ -916,6 +963,8 @@ export default {
             this.calculateScore();
 
 
+
+
             // 模拟提交成功
             setTimeout(() => {
                 uni.hideLoading();
@@ -923,7 +972,31 @@ export default {
             }, 1500);
         },
 
+        restartForm() {
+            // 重置表单数据
+            let requiredFields = [
+                'age', 'education', 'professional', 'socialYear',
+                'investStatus', 'shortSupply', 'socialBaseYear', 'publicService',
+                'remoteArea', 'freshGraduate', 'award', 'spouseCity'
+            ];
+
+            let scoreFields = [
+                'ageScore', 'educationScore', 'skillScore', 'socialYearScore',
+                'shortSupplyScore', 'investScore', 'socialBaseYearScore', 'publicServiceScore',
+                'remoteAreaScore', 'freshGraduateScore', 'awardScore', 'spouseCityScore',
+                'falseMaterialScore', 'administrativeScore', 'criminalRecordScore'
+            ];
+            requiredFields.forEach(field => {
+                this[field] = '';
+            });
+            scoreFields.forEach(field => {
+                this[field] = 0;
+            });
+        },
+
         handleRestart() {
+            // 清空所有表单数据和分数
+            this.restartForm();
             this.popModalShow = false
         },
 
